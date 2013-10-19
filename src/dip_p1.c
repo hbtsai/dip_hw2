@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#define Size 256
+#define Size 512
 
 int write_pgm_image(char* filename, int x_dim, int y_dim, unsigned char* image)
 {
@@ -309,133 +309,7 @@ int main(int argc, char** argv)
 	fclose(file);
 
 	/* save the original image for comparision */
-	write_pgm_image("dip_hw1_p1_I.pgm", Size, Size, Imagedata);
-
-	unsigned char imageD[Size*Size]={};
-	/* copy image data */
-	memcpy(imageD, Imagedata, sizeof(Imagedata));
-
-	/* decrease brightness (D) */ 
-	decrease_brightness(Size, Size, imageD);
-	write_pgm_image("dip_hw1_p1_D.pgm", Size, Size, imageD);
-
-	unsigned char imageH[Size*Size]={};
-	/* copy image data */
-	memcpy(imageH, imageD, sizeof(imageD));
-
-	/* histogram_equalizer (H) */
-	histogram_equalizer(Size, Size, imageH);
-	write_pgm_image("dip_hw1_p1_H.pgm", Size, Size, imageH);
-
-
-	/* here loop create local histogram equalizer with different window size */
-	/* change w_size to whatever 0< number <256 */
-	/*
-	int w_size=50;
-	unsigned char imageL[Size*Size]={};
-	char file_name[1024]={};
-
-	for( int w_size=10; w_size<250; w_size+=10)
-	{
-		memset(imageL, 0, sizeof(imageL));
-		for(int i=0; i<Size; i++)
-		{
-			for(int j=0; j<Size; j++)
-			{
-				// just ignore the boarder & corner
-				local_histogram_equalizer(w_size, Size, Size, i, j, imageD, imageL);
-			}
-		}
-		sprintf(file_name, "solved_c_%d.pgm", w_size);
-		write_pgm_image(file_name, Size, Size, imageL);
-	}
-	*/
-
-	int i=0, j=0, w_size=10;
-	unsigned char imageL[Size*Size]={};
-	for(i=0; i<Size; i++)
-		for(j=0; j<Size; j++)
-			local_histogram_equalizer(w_size, Size, Size, i, j, imageD, imageL);
-
-	write_pgm_image("dip_hw1_p1_L_10.pgm", Size, Size, imageL);
-	paint_histogram(Size, Size, imageL,    "dip_hw1_p1_histogram_L_10.pgm");
-
-	memset(imageL, 0, Size*Size);
-	for(i=0; i<Size; i++)
-		for(j=0; j<Size; j++)
-			local_histogram_equalizer(30, Size, Size, i, j, imageD, imageL);
-	write_pgm_image("dip_hw1_p1_L_30.pgm", Size, Size, imageL);
-	paint_histogram(Size, Size, imageL,    "dip_hw1_p1_histogram_L_30.pgm");
-
-	memset(imageL, 0, Size*Size);
-	for(i=0; i<Size; i++)
-		for(j=0; j<Size; j++)
-			local_histogram_equalizer(120, Size, Size, i, j, imageD, imageL);
-	write_pgm_image("dip_hw1_p1_L_120.pgm", Size, Size, imageL);
-	paint_histogram(Size, Size, imageL,    "dip_hw1_p1_histogram_L_120.pgm");
-
-	memset(imageL, 0, Size*Size);
-	for(i=0; i<Size; i++)
-		for(j=0; j<Size; j++)
-			local_histogram_equalizer(180, Size, Size, i, j, imageD, imageL);
-	write_pgm_image("dip_hw1_p1_L_180.pgm", Size, Size, imageL);
-	paint_histogram(Size, Size, imageL,    "dip_hw1_p1_histogram_L_180.pgm");
-
-
-	paint_histogram(Size, Size, Imagedata, "dip_hw1_p1_histogram_I.pgm");
-	paint_histogram(Size, Size, imageD,    "dip_hw1_p1_histogram_D.pgm");
-	paint_histogram(Size, Size, imageH,    "dip_hw1_p1_histogram_H.pgm");
-
-	unsigned char imageLog[Size*Size] = {};
-	unsigned char imageILog[Size*Size] = {};
-	unsigned char imagePlaw[Size*Size] = {};
-
-	memcpy(imageLog, imageD, sizeof(imageD));
-	memcpy(imageILog, imageD, sizeof(imageD));
-	memcpy(imagePlaw, imageD, sizeof(imageD));
-
-	/* log_c is the constant for log transform */
-	const int log_c = 35;
-	log_transform(log_c, Size, Size, imageLog);
-	write_pgm_image("dip_hw1_p1_D_log.pgm", Size, Size, imageLog);
-	paint_histogram(Size, Size, imageLog, "dip_hw1_p1_histogram_D_log.pgm");
-
-	const int log_d = 240;
-	inverse_log_transform(log_d, Size, Size, imageILog);
-	write_pgm_image("dip_hw1_p1_D_ilog.pgm", Size, Size, imageILog);
-	paint_histogram(Size, Size, imageILog, "dip_hw1_p1_histogram_D_ilog.pgm");
-
-	double pow = 30;
-	double gamma = 0.5;
-	power_law_transform(pow, gamma, Size, Size, imagePlaw);
-	write_pgm_image("dip_hw1_p1_D_pow.pgm", Size, Size, imagePlaw);
-	paint_histogram(Size, Size, imagePlaw, "dip_hw1_p1_histogram_D_pow.pgm");
-
-	pow = 1;
-	gamma = 1.5;
-	memcpy(imagePlaw, imageD, sizeof(imageD));
-	power_law_transform(pow, gamma, Size, Size, imagePlaw);
-	write_pgm_image("dip_hw1_p1_D_pow1.pgm", Size, Size, imagePlaw);
-	paint_histogram(Size, Size, imagePlaw, "dip_hw1_p1_histogram_D_pow1.pgm");
-
-	unsigned char imageOtsu[Size*Size]={};
-	int thre = otsu_method(Size, Size, Imagedata);
-	fprintf(stderr, " thresold = %d \n", thre);
-	memcpy(imageOtsu, Imagedata, sizeof(imageOtsu));	
-	convert_to_black_n_white(thre, Size, Size, imageOtsu);
-	write_pgm_image("dip_hw1_p1_I_otsu.pgm", Size, Size, imageOtsu);
-
-	memcpy(imageOtsu, Imagedata, sizeof(imageOtsu));	
-	convert_to_black_n_white(64, Size, Size, imageOtsu);
-	write_pgm_image("dip_hw1_p1_I_64.pgm", Size, Size, imageOtsu);
-
-	memcpy(imageOtsu, Imagedata, sizeof(imageOtsu));	
-	convert_to_black_n_white(128, Size, Size, imageOtsu);
-	write_pgm_image("dip_hw1_p1_I_128.pgm", Size, Size, imageOtsu);
-
-	memcpy(imageOtsu, Imagedata, sizeof(imageOtsu));	
-	convert_to_black_n_white(192, Size, Size, imageOtsu);
-	write_pgm_image("dip_hw1_p1_I_192.pgm", Size, Size, imageOtsu);
+	write_pgm_image("sample1.pgm", Size, Size, Imagedata);
 
 	exit(0);
 	return 0;
