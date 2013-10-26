@@ -277,18 +277,16 @@ void split_fisheye(int width, int height,
 	{
 		for(j=0; j<width; j++)
 		{
-			image_r[i*width+j]=image[i*width+j];
+			image_r[i*width*2+j+width]=image[i*width+j];
 		}
 	}
-	/*
 	for(i=height/2; i<height; i++)
 	{
 		for(j=0; j<width; j++)
 		{
-			image_r[i*2*(width)+j]=image[i*width+j];
+			image_r[(i-height/2)*2*(width)+j]=image[i*width+j];
 		}
 	}
-	*/
 }
 
 int main(int argc, char** argv)
@@ -318,7 +316,7 @@ int main(int argc, char** argv)
 
 	unsigned char pan1[Size*Size]={};
 	split_fisheye(Size, Size, Imagedata, pan1);
-	write_pgm_image("panaroma1.pgm", Size, Size, pan1);
+	write_pgm_image("panaroma1.pgm", (2*Size), (Size/2), pan1);
 
 	/*
 	unsigned char rot[Size*Size]={};
