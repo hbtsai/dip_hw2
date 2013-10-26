@@ -120,7 +120,6 @@ int remove_snp_2d(int w_size, int width, int height, unsigned char* image, unsig
 {
 	unsigned char *array = calloc(1, w_size*w_size);
 	int count=0;
-	int z=0;
 	int x=0, y=0, x2=0, y2=0;
 	for(x=0; x<width; x++)
 	{
@@ -270,6 +269,28 @@ float psnr(int width, int height, unsigned char* _image, unsigned char* image)
 	return 10*log10((255*255)/mse);
 }
 
+void split_fisheye(int width, int height, 
+		unsigned char* image, unsigned char* image_r)
+{
+	int i=0, j=0;
+	for(i=0; i<height/2; i++)
+	{
+		for(j=0; j<width; j++)
+		{
+			image_r[i*width+j]=image[i*width+j];
+		}
+	}
+	/*
+	for(i=height/2; i<height; i++)
+	{
+		for(j=0; j<width; j++)
+		{
+			image_r[i*2*(width)+j]=image[i*width+j];
+		}
+	}
+	*/
+}
+
 int main(int argc, char** argv)
 {
 	FILE *file = NULL;
@@ -294,6 +315,16 @@ int main(int argc, char** argv)
 
 	/* save the original image for comparision */
 	write_pgm_image("sample2.pgm", Size, Size, Imagedata);
+
+	unsigned char pan1[Size*Size]={};
+	split_fisheye(Size, Size, Imagedata, pan1);
+	write_pgm_image("panaroma1.pgm", Size, Size, pan1);
+
+	/*
+	unsigned char rot[Size*Size]={};
+	rotate(Size, Size, Imagedata, rot);
+	write_pgm_image("rotate.pgm", Size, Size, rot);
+	*/
 
 	exit(0);
 	return 0;

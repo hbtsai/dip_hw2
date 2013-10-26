@@ -43,8 +43,8 @@ help:
 	@echo "-------- INSTRUCTION   END --------"
 
 run: 
-	@echo "    LOG: executing problem 1: ./dip_p1 sample1.raw"
-	./dip_p1 sample1.raw
+#	@echo "    LOG: executing problem 1: ./dip_p1 sample1.raw"
+#	./dip_p1 sample1.raw
 	@echo "    LOG: executing problem 2: ./dip_p2 sample2.raw"
 	./dip_p2 sample2.raw
 
