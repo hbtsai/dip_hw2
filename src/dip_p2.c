@@ -274,17 +274,54 @@ void split_fisheye(int width, int height,
 {
 	int i=0, j=0;
 	for(i=0; i<height/2; i++)
-	{
 		for(j=0; j<width; j++)
-		{
 			image_r[i*width*2+j+width]=image[i*width+j];
+	for(i=height/2; i<height; i++)
+		for(j=0; j<width; j++)
+			image_r[(i-height/2)*2*(width)+j]=image[(height-(i-height/2))*width+(width-j)];
+}
+
+void warping(int width, int height, 
+		unsigned char* image, unsigned char* image_r,
+		unsigned char* x_map, unsigned char* y_map)
+{
+	int x=0, y=0;
+
+	/*
+	 * x' = R*arctan(x/R)
+	 * y' = R*arccos(x/R)
+	 * tan(x'/R)*R=x
+	 */
+	for(x=0; x<height; x++)
+	{
+		for(y=0; y<width; y++)
+		{
+			image_r[x*width+y]	= image[x_map[x*width+y]*width+y_map[x*width+y]];
 		}
 	}
-	for(i=height/2; i<height; i++)
+
+}
+
+void build_map(int width, int height, unsigned char *x_map, unsigned char *y_map)
+{
+	int i=0, j=0;
+	float xu=0, yu=0; // -1 <= xu, yu <=1
+	int radius = height/2;
+	double x_circle=0, y_circle=0;
+	for(i=-height/2; i<height/2; i++)
 	{
-		for(j=0; j<width; j++)
+		for(j=-width/2; j<width/2; j++)
 		{
-			image_r[(i-height/2)*2*(width)+j]=image[i*width+j];
+			xu = (double) i/radius;
+			yu = (double) j/radius;
+
+			x_circle=xu*sqrt( ( 1- pow(yu, 2)/2 ));
+			y_circle=yu*sqrt( (1- pow(xu, 2)/2 ));
+			
+			x_map[(i+height/2)*width+(j+height/2)]=x_circle*radius+height/2;
+			y_map[(i+width/2)*width+(j+width/2)]=y_circle*radius+width/2;
+
+			fprintf(stderr, "x_circle=%f, y_circle=%f\n", x_circle, y_circle);
 		}
 	}
 }
@@ -317,6 +354,13 @@ int main(int argc, char** argv)
 	unsigned char pan1[Size*Size]={};
 	split_fisheye(Size, Size, Imagedata, pan1);
 	write_pgm_image("panaroma1.pgm", (2*Size), (Size/2), pan1);
+
+	unsigned char pan2[Size*Size]={};
+	unsigned char x_map[Size*Size]={};
+	unsigned char y_map[Size*Size]={};
+	build_map(Size, Size, x_map, y_map);
+	warping(Size, Size, Imagedata, pan2, x_map, y_map);
+	write_pgm_image("panaroma2.pgm", Size, Size, pan2);
 
 	/*
 	unsigned char rot[Size*Size]={};
